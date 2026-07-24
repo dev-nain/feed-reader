@@ -1,17 +1,15 @@
 {
-  "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "frontpage-feed-reader-main",
-  "compatibility_date": "2026-07-24",
-  "observability": {
-    "enabled": true
-  },
-  "main": "./workers/app.ts",
-  "compatibility_flags": [
-    "nodejs_compat"
-  ],
-  "env": {
-    "staging": {
-      "name": "frontpage-feed-reader-staging"
-    }
-  }
+	"$schema": "node_modules/wrangler/config-schema.json",
+	"name": "frontpage-feed-reader-main",
+	"compatibility_date": "2026-07-24",
+	"observability": {
+		"enabled": true
+	},
+	"main": "./workers/app.ts",
+	"compatibility_flags": ["nodejs_compat"],
+	"env": {
+		"staging": {
+			"name": "frontpage-feed-reader-staging"
+		}
+	}
 }
