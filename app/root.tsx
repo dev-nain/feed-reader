@@ -7,8 +7,8 @@ import {
 	ScrollRestoration,
 	useRouteLoaderData,
 } from "react-router";
-
 import type { Route } from "./+types/root";
+import { TooltipProvider } from "./components/ui/tooltip";
 import { getTheme } from "./lib/theme.server";
 import "./app.css";
 
@@ -51,7 +51,11 @@ export function Layout({ children }: { children: React.ReactNode }) {
 }
 
 export default function App() {
-	return <Outlet />;
+	return (
+		<TooltipProvider delayDuration={300}>
+			<Outlet />
+		</TooltipProvider>
+	);
 }
 
 export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
