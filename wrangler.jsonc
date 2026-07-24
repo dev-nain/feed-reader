@@ -8,5 +8,10 @@
   "main": "./workers/app.ts",
   "compatibility_flags": [
     "nodejs_compat"
-  ]
+  ],
+  "env": {
+    "staging": {
+      "name": "frontpage-feed-reader-staging"
+    }
+  }
 }
