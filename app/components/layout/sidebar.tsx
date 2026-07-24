@@ -27,10 +27,7 @@ function CategoryGroup({ category }: { category: Category }) {
 				className="flex items-center gap-2 rounded-md px-2 py-1.5 text-sm text-text-primary outline-none transition-colors hover:bg-bg-tertiary focus-visible:ring-2 focus-visible:ring-accent"
 			>
 				{category.expanded ? (
-					<FolderOpen
-						className={cn("size-4", style?.text)}
-						aria-hidden
-					/>
+					<FolderOpen className={cn("size-4", style?.text)} aria-hidden />
 				) : (
 					<Folder
 						className={cn("size-4", style?.text)}
