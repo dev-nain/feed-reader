@@ -20,10 +20,13 @@ export interface FeedItem {
 	id: string;
 	title: string;
 	source: string;
+	author: string;
 	category: string;
 	/** Relative label shown in the row; `time` is the full date for the tooltip. */
 	relative: string;
 	time: string;
+	/** Machine-readable publication date for <time dateTime>. */
+	iso: string;
 	excerpt: string;
 	read: boolean;
 	/** Date-group heading the item sits under. */
@@ -77,11 +80,33 @@ const SOURCE_COLORS = [
 	"bg-pink-500",
 ];
 
+/** Gradient stand-in for an item image. Literal strings so Tailwind scans them. */
+// ponytail: swap for the real `item.image` once the parser extracts og:image/enclosures.
+const SOURCE_GRADIENTS = [
+	"from-red-500/25",
+	"from-orange-500/25",
+	"from-amber-500/25",
+	"from-emerald-500/25",
+	"from-teal-500/25",
+	"from-blue-500/25",
+	"from-indigo-500/25",
+	"from-violet-500/25",
+	"from-purple-500/25",
+	"from-pink-500/25",
+];
+
+function hash(name: string): number {
+	let sum = 0;
+	for (let i = 0; i < name.length; i++) sum = (sum + name.charCodeAt(i)) % 997;
+	return sum;
+}
+
 export function sourceColor(name: string): string {
-	let hash = 0;
-	for (let i = 0; i < name.length; i++)
-		hash = (hash + name.charCodeAt(i)) % 997;
-	return SOURCE_COLORS[hash % SOURCE_COLORS.length];
+	return SOURCE_COLORS[hash(name) % SOURCE_COLORS.length];
+}
+
+export function sourceGradient(name: string): string {
+	return SOURCE_GRADIENTS[hash(name) % SOURCE_GRADIENTS.length];
 }
 
 export const categories: Category[] = [
@@ -143,8 +168,10 @@ export const savedCount = 12;
 export const feedItems: FeedItem[] = [
 	{
 		id: "1",
+		iso: "2026-07-24T09:14",
 		title: "Practical Guide To Designing For Colorblind Users",
 		source: "Smashing Magazine",
+		author: "Elena Vasquez",
 		category: "Design",
 		relative: "2h ago",
 		time: "Jul 24, 2026, 9:14 AM",
@@ -155,8 +182,10 @@ export const feedItems: FeedItem[] = [
 	},
 	{
 		id: "2",
+		iso: "2026-07-24T08:02",
 		title: "How We Reduced P99 Latency by 60% with Edge-First Caching",
 		source: "Cloudflare Blog",
+		author: "Marcus Chen",
 		category: "Backend & DevOps",
 		relative: "3h ago",
 		time: "Jul 24, 2026, 8:02 AM",
@@ -167,8 +196,10 @@ export const feedItems: FeedItem[] = [
 	},
 	{
 		id: "3",
+		iso: "2026-07-24T07:20",
 		title: "Building Effective RAG Systems: What Actually Works in Production",
 		source: "Simon Willison",
+		author: "Simon Willison",
 		category: "AI & ML",
 		relative: "4h ago",
 		time: "Jul 24, 2026, 7:20 AM",
@@ -179,8 +210,10 @@ export const feedItems: FeedItem[] = [
 	},
 	{
 		id: "4",
+		iso: "2026-07-24T06:05",
 		title: "The Surprising Truth About CSS Container Queries",
 		source: "Josh W. Comeau",
+		author: "Josh W. Comeau",
 		category: "Frontend",
 		relative: "5h ago",
 		time: "Jul 24, 2026, 6:05 AM",
@@ -191,8 +224,10 @@ export const feedItems: FeedItem[] = [
 	},
 	{
 		id: "5",
+		iso: "2026-07-24T05:11",
 		title: "Introducing Variables 2.0: Design Tokens Meet Real Logic",
 		source: "Figma Blog",
+		author: "Priya Raman",
 		category: "Design",
 		relative: "6h ago",
 		time: "Jul 24, 2026, 5:11 AM",
@@ -203,8 +238,10 @@ export const feedItems: FeedItem[] = [
 	},
 	{
 		id: "6",
+		iso: "2026-07-23T11:05",
 		title: "Shipping Faster with Preview Deployments per Pull Request",
 		source: "Vercel Blog",
+		author: "Tomás Oliveira",
 		category: "Backend & DevOps",
 		relative: "yesterday",
 		time: "Jul 23, 2026, 11:05 AM",
@@ -215,8 +252,10 @@ export const feedItems: FeedItem[] = [
 	},
 	{
 		id: "7",
+		iso: "2026-07-23T09:15",
 		title: "How We Cut Our Test Suite from 40 Minutes to 6",
 		source: "The Pragmatic Engineer",
+		author: "Gergely Orosz",
 		category: "General Tech",
 		relative: "yesterday",
 		time: "Jul 23, 2026, 9:15 AM",
@@ -225,4 +264,166 @@ export const feedItems: FeedItem[] = [
 		read: true,
 		group: "Yesterday",
 	},
+	{
+		id: "8",
+		iso: "2026-07-22T14:40",
+		title: "Designing Focus States People Actually Notice",
+		source: "Smashing Magazine",
+		author: "Elena Vasquez",
+		category: "Design",
+		relative: "3d ago",
+		time: "Jul 22, 2026, 2:40 PM",
+		excerpt:
+			"The default focus ring is the most-removed accessibility feature on the web. Here is how to design one that fits your brand and still passes contrast requirements.",
+		read: true,
+		group: "Earlier this week",
+	},
+	{
+		id: "9",
+		iso: "2026-07-22T10:05",
+		title: "Structured Output Is the Feature That Made LLMs Useful",
+		source: "Simon Willison",
+		author: "Simon Willison",
+		category: "AI & ML",
+		relative: "3d ago",
+		time: "Jul 22, 2026, 10:05 AM",
+		excerpt:
+			"Free-text responses are a parsing nightmare. Schema-constrained output turned a fun demo into something I am willing to put in a production pipeline.",
+		read: true,
+		group: "Earlier this week",
+	},
+	{
+		id: "10",
+		iso: "2026-07-21T16:30",
+		title: "An Interactive Guide to Flexbox Gaps",
+		source: "Josh W. Comeau",
+		author: "Josh W. Comeau",
+		category: "Frontend",
+		relative: "4d ago",
+		time: "Jul 21, 2026, 4:30 PM",
+		excerpt:
+			"Gap looks simple until it meets wrapping, margins and nested flex containers. A visual walkthrough of the cases that trip people up.",
+		read: true,
+		group: "Earlier this week",
+	},
+	{
+		id: "11",
+		iso: "2026-07-21T09:00",
+		title: "Rate Limiting at the Edge Without a Central Store",
+		source: "Cloudflare Blog",
+		author: "Marcus Chen",
+		category: "Backend & DevOps",
+		relative: "4d ago",
+		time: "Jul 21, 2026, 9:00 AM",
+		excerpt:
+			"Coordinating counters across hundreds of locations is expensive. Approximate counting gets you most of the protection for a fraction of the latency.",
+		read: true,
+		group: "Earlier this week",
+	},
 ];
+
+/**
+ * A block of article body content. Plain text only — never HTML — so the reader
+ * view has no `dangerouslySetInnerHTML` and therefore no XSS surface.
+ * Backticks inside `text` render as inline code.
+ */
+export type Block =
+	| { type: "h2" | "h3" | "p" | "quote" | "code" | "image"; text: string }
+	| { type: "ul" | "ol"; items: string[] };
+
+// ponytail: one shared body for every mock article — the lead paragraph is the
+// item's own excerpt. Replace wholesale with parsed feed content when Core #2 lands.
+const SAMPLE_BODY: Block[] = [
+	{
+		type: "h2",
+		text: "Why this keeps coming up",
+	},
+	{
+		type: "p",
+		text: "Every team hits this wall at roughly the same point: the prototype works, the demo lands, and then real traffic arrives. What follows is less a rewrite than a slow accumulation of small, boring corrections — the kind nobody writes conference talks about.",
+	},
+	{
+		type: "image",
+		text: "Diagram: request path before and after the change",
+	},
+	{
+		type: "p",
+		text: "The shape of the fix is usually visible in the first week. Acting on it takes three months, because the hard part is not the change itself but agreeing on which of the four plausible causes is the real one.",
+	},
+	{
+		type: "h3",
+		text: "What actually moved the numbers",
+	},
+	{
+		type: "ul",
+		items: [
+			"Measuring the thing we cared about, rather than the thing that was easy to measure.",
+			"Deleting two layers of indirection that existed for a use case we never shipped.",
+			"Setting a budget and failing the build when it was exceeded.",
+		],
+	},
+	{
+		type: "p",
+		text: "In code, the whole intervention came down to a single guard. We reached for `structuredClone` instead of the hand-rolled deep copy, and the allocation profile flattened out immediately.",
+	},
+	{
+		type: "code",
+		text: `function withBudget(fn, ms = 250) {\n  const started = performance.now();\n  const result = fn();\n  const spent = performance.now() - started;\n  if (spent > ms) console.warn(\`over budget: \${spent.toFixed(1)}ms\`);\n  return result;\n}`,
+	},
+	{
+		type: "quote",
+		text: "The best performance work looks like deletion. If your diff is mostly additions, you are probably treating a symptom.",
+	},
+	{
+		type: "h3",
+		text: "The order that worked",
+	},
+	{
+		type: "ol",
+		items: [
+			"Reproduce it locally, with a script anyone on the team can run.",
+			"Write down the number you expect before you change anything.",
+			"Change one thing. Measure. Keep or revert — never both.",
+		],
+	},
+	{
+		type: "p",
+		text: "None of this is novel, and that is rather the point. The teams that get out of this hole fastest are not the ones with the cleverest idea; they are the ones willing to do the unglamorous measurement first.",
+	},
+];
+
+/** Body for one item: its excerpt as the lead, then the shared sample content. */
+export function articleBody(item: FeedItem): Block[] {
+	return [{ type: "p", text: item.excerpt }, ...SAMPLE_BODY];
+}
+
+export function findItem(id: string): FeedItem | undefined {
+	return feedItems.find((item) => item.id === id);
+}
+
+/**
+ * Further reading for the article footer: other items from the same source,
+ * else others in the same category. Empty when the source has no siblings.
+ */
+export function relatedItems(item: FeedItem) {
+	const others = feedItems.filter((other) => other.id !== item.id);
+	const sameSource = others.filter((other) => other.source === item.source);
+	if (sameSource.length > 0) {
+		return { label: `More from ${item.source}`, items: sameSource.slice(0, 3) };
+	}
+	return {
+		label: `Related in ${item.category}`,
+		items: others
+			.filter((other) => other.category === item.category)
+			.slice(0, 3),
+	};
+}
+
+// ponytail: canned text standing in for the AI summary differentiator — swap for
+// a cached, Zod-validated Mistral call (server-side) when that feature is picked.
+export function aiSummary(item: FeedItem): string[] {
+	return [
+		`${item.title.replace(/[.?!]$/, "")} — in short: ${item.excerpt.slice(0, 120).trim()}…`,
+		"The piece argues that the fix is mostly subtraction: measure the thing you actually care about, delete the layers added for a use case that never shipped, and make the budget fail the build.",
+	];
+}

@@ -1,8 +1,10 @@
 import { motion } from "framer-motion";
+import { Link } from "react-router";
 import {
 	ItemActions,
 	REVEAL,
 	SourceMark,
+	Thumbnail,
 	UnreadDot,
 } from "~/components/shared";
 import { categoryStyles, type FeedItem } from "~/lib/mock-feed";
@@ -14,14 +16,14 @@ export function FeedItemRow({ item }: { item: FeedItem }) {
 	const badge = categoryStyles[item.category]?.badge;
 	return (
 		<motion.article variants={listItem} className="group relative">
-			<a
-				href="#article"
-				className="flex gap-3 rounded-lg px-4 py-4 pr-28 outline-none transition-colors hover:bg-bg-secondary focus-visible:ring-2 focus-visible:ring-accent sm:px-6"
+			<Link
+				to={`/article/${item.id}`}
+				className="flex items-start gap-3 rounded-lg px-4 py-4 pr-28 outline-none transition-colors hover:bg-bg-secondary focus-visible:ring-2 focus-visible:ring-accent sm:px-6"
 			>
 				<UnreadDot read={item.read} className="mt-1.5" />
 				<div
 					className={cn(
-						"flex min-w-0 flex-col gap-1",
+						"flex min-w-0 flex-1 flex-col gap-1",
 						item.read && "opacity-60",
 					)}
 				>
@@ -57,7 +59,7 @@ export function FeedItemRow({ item }: { item: FeedItem }) {
 						{item.category}
 					</span>
 				</div>
-			</a>
+			</Link>
 
 			<ItemActions
 				title={item.title}
@@ -75,52 +77,54 @@ export function FeedItemCard({ item }: { item: FeedItem }) {
 			variants={listItem}
 			whileHover={{ scale: 1.015 }}
 			whileTap={{ scale: 0.99 }}
-			className="group relative flex flex-col rounded-lg border border-border bg-surface shadow-sm transition-colors hover:border-border-subtle hover:shadow-md"
+			className="group relative flex flex-col overflow-hidden rounded-lg border border-border bg-surface shadow-sm transition-colors hover:border-border-subtle hover:shadow-md"
 		>
-			<a
-				href="#article"
+			<Link
+				to={`/article/${item.id}`}
 				className={cn(
-					"flex flex-1 flex-col gap-2 rounded-lg p-4 outline-none focus-visible:ring-2 focus-visible:ring-accent",
+					"flex flex-1 flex-col rounded-lg outline-none focus-visible:ring-2 focus-visible:ring-accent",
 					item.read && "opacity-70",
 				)}
 			>
-				<div className="flex items-center gap-2 text-sm">
-					<UnreadDot read={item.read} />
-					<SourceMark name={item.source} className="size-4 text-[0.5rem]" />
-					<span className="truncate font-medium text-text-primary">
-						{item.source}
-					</span>
-					<time
-						className="ml-auto shrink-0 text-xs text-text-tertiary"
-						title={item.time}
+				<div className="flex flex-1 flex-col gap-2 p-4">
+					<div className="flex items-center gap-2 text-sm">
+						<UnreadDot read={item.read} />
+						<SourceMark name={item.source} className="size-4 text-[0.5rem]" />
+						<span className="truncate font-medium text-text-primary">
+							{item.source}
+						</span>
+						<time
+							className="ml-auto shrink-0 text-xs text-text-tertiary"
+							title={item.time}
+						>
+							{item.relative}
+						</time>
+						{!item.read && <span className="sr-only">unread</span>}
+					</div>
+
+					<h3
+						className={cn(
+							"text-base text-text-primary",
+							item.read ? "font-medium" : "font-semibold",
+						)}
 					>
-						{item.relative}
-					</time>
-					{!item.read && <span className="sr-only">unread</span>}
+						{item.title}
+					</h3>
+
+					<p className="line-clamp-2 text-sm text-text-secondary">
+						{item.excerpt}
+					</p>
+
+					<span
+						className={cn(
+							"mt-auto inline-flex w-fit items-center rounded-sm px-2 py-0.5 text-xs font-medium",
+							badge,
+						)}
+					>
+						{item.category}
+					</span>
 				</div>
-
-				<h3
-					className={cn(
-						"text-base text-text-primary",
-						item.read ? "font-medium" : "font-semibold",
-					)}
-				>
-					{item.title}
-				</h3>
-
-				<p className="line-clamp-3 text-sm text-text-secondary">
-					{item.excerpt}
-				</p>
-
-				<span
-					className={cn(
-						"mt-auto inline-flex w-fit items-center rounded-sm px-2 py-0.5 text-xs font-medium",
-						badge,
-					)}
-				>
-					{item.category}
-				</span>
-			</a>
+			</Link>
 
 			<ItemActions
 				title={item.title}
@@ -135,8 +139,8 @@ export function FeedItemCard({ item }: { item: FeedItem }) {
 export function FeedItemCompact({ item }: { item: FeedItem }) {
 	return (
 		<motion.article variants={listItem} className="group relative">
-			<a
-				href="#article"
+			<Link
+				to={`/article/${item.id}`}
 				className="flex items-center gap-3 rounded-md px-4 py-2 pr-20 outline-none transition-colors hover:bg-bg-secondary focus-visible:ring-2 focus-visible:ring-accent sm:px-6"
 			>
 				<UnreadDot read={item.read} />
@@ -156,7 +160,7 @@ export function FeedItemCompact({ item }: { item: FeedItem }) {
 					<span className="max-w-[12rem] truncate">{item.source}</span>
 					<time title={item.time}>{item.relative}</time>
 				</span>
-			</a>
+			</Link>
 
 			<ItemActions
 				title={item.title}

@@ -1,11 +1,11 @@
-import { Bookmark, Share2 } from "lucide-react";
+import { Bookmark, ImageIcon, Share2 } from "lucide-react";
 import { Button } from "~/components/ui/button";
 import {
 	Tooltip,
 	TooltipContent,
 	TooltipTrigger,
 } from "~/components/ui/tooltip";
-import { sourceColor } from "~/lib/mock-feed";
+import { sourceColor, sourceGradient } from "~/lib/mock-feed";
 import { cn } from "~/lib/utils";
 
 /** Shown on hover or keyboard focus (always visible on touch, which lacks hover). */
@@ -47,6 +47,31 @@ export function SourceMark({
 		>
 			{name.charAt(0)}
 		</span>
+	);
+}
+
+/**
+ * Stand-in for an item image: deterministic gradient + glyph, no network.
+ * Decorative — the title carries the meaning, so it stays out of the a11y tree.
+ */
+export function Thumbnail({
+	source,
+	className,
+}: {
+	source: string;
+	className?: string;
+}) {
+	return (
+		<div
+			aria-hidden
+			className={cn(
+				"grid shrink-0 place-items-center bg-linear-to-br to-bg-tertiary",
+				sourceGradient(source),
+				className,
+			)}
+		>
+			<ImageIcon className="size-6 text-text-tertiary/60" />
+		</div>
 	);
 }
 
