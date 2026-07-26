@@ -6,7 +6,10 @@ import {
 } from "@react-router/dev/routes";
 
 export default [
-	layout("routes/app-shell.tsx", [index("routes/home.tsx")]),
+	layout("routes/app-shell.tsx", [
+		index("routes/home.tsx"),
+		route("article/:id", "routes/article.tsx"),
+	]),
 	route("style-guide", "routes/style-guide.tsx"),
 	route("set-theme", "routes/set-theme.ts"),
 	route("set-layout", "routes/set-layout.ts"),
