@@ -11,7 +11,11 @@
 		"format": "biome check --write",
 		"deploy": "npm run build && wrangler deploy",
 		"preview": "npm run build && wrangler dev",
-		"cf-typegen": "wrangler types"
+		"cf-typegen": "wrangler types",
+		"prepare": "husky"
+	},
+	"lint-staged": {
+		"*.{ts,tsx,js,jsx,json,css}": "biome check --write --no-errors-on-unmatched"
 	},
 	"dependencies": {
 		"@radix-ui/react-tooltip": "^1.2.14",
@@ -34,7 +38,9 @@
 		"@types/node": "^22",
 		"@types/react": "^19.2.14",
 		"@types/react-dom": "^19.2.3",
+		"husky": "^9.1.7",
 		"isbot": "^5.2.1",
+		"lint-staged": "^16.4.0",
 		"tailwindcss": "^4.2.2",
 		"typescript": "^5.9.3",
 		"vite": "^8.0.3",

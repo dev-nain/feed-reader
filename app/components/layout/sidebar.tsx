@@ -1,9 +1,10 @@
 import {
 	Bookmark,
-	ChevronDown,
-	ChevronRight,
 	CircleCheck,
+	Folder,
+	FolderOpen,
 	Inbox,
+	Plus,
 } from "lucide-react";
 import { SourceMark } from "~/components/shared";
 import {
@@ -14,6 +15,7 @@ import {
 	unreadTotal,
 } from "~/lib/mock-feed";
 import { cn } from "~/lib/utils";
+import { Button } from "../ui/button";
 
 function CategoryGroup({ category }: { category: Category }) {
 	const style = categoryStyles[category.name];
@@ -25,14 +27,14 @@ function CategoryGroup({ category }: { category: Category }) {
 				className="flex items-center gap-2 rounded-md px-2 py-1.5 text-sm text-text-primary outline-none transition-colors hover:bg-bg-tertiary focus-visible:ring-2 focus-visible:ring-accent"
 			>
 				{category.expanded ? (
-					<ChevronDown className="size-4 text-text-tertiary" aria-hidden />
+					<FolderOpen className={cn("size-4", style?.text)} aria-hidden />
 				) : (
-					<ChevronRight className="size-4 text-text-tertiary" aria-hidden />
+					<Folder
+						className={cn("size-4", style?.text)}
+						fill="currentColor"
+						aria-hidden
+					/>
 				)}
-				<span
-					aria-hidden
-					className={cn("size-2 shrink-0 rounded-full", style?.dot)}
-				/>
 				<span className="flex-1 text-left font-medium">{category.name}</span>
 				<span className="text-xs text-text-tertiary">{category.unread}</span>
 			</button>
@@ -102,6 +104,14 @@ export function Sidebar() {
 					{categories.map((category) => (
 						<CategoryGroup key={category.name} category={category} />
 					))}
+					<Button
+						variant="ghost"
+						size="sm"
+						className="mt-1 justify-start gap-2 text-text-secondary"
+					>
+						<Plus className="size-4" aria-hidden />
+						Add category
+					</Button>
 				</div>
 			</div>
 

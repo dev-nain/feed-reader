@@ -31,25 +31,33 @@ export interface FeedItem {
 }
 
 /** Per-category accent: sidebar dot + item badge. Literal strings so Tailwind scans them. */
-export const categoryStyles: Record<string, { dot: string; badge: string }> = {
+export const categoryStyles: Record<
+	string,
+	{ dot: string; text: string; badge: string }
+> = {
 	Frontend: {
 		dot: "bg-blue-500",
+		text: "text-blue-500",
 		badge: "bg-blue-500/10 text-blue-600 dark:text-blue-400",
 	},
 	Design: {
 		dot: "bg-rose-500",
+		text: "text-rose-500",
 		badge: "bg-rose-500/10 text-rose-600 dark:text-rose-400",
 	},
 	"Backend & DevOps": {
 		dot: "bg-amber-500",
+		text: "text-amber-500",
 		badge: "bg-amber-500/10 text-amber-600 dark:text-amber-400",
 	},
 	"General Tech": {
 		dot: "bg-violet-500",
+		text: "text-violet-500",
 		badge: "bg-violet-500/10 text-violet-600 dark:text-violet-400",
 	},
 	"AI & ML": {
 		dot: "bg-purple-500",
+		text: "text-purple-500",
 		badge: "bg-purple-500/10 text-purple-600 dark:text-purple-400",
 	},
 };
