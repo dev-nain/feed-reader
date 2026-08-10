@@ -1,15 +1,23 @@
 import { motion } from "framer-motion";
-import { ArrowLeft, ExternalLink, ImageIcon } from "lucide-react";
+import {
+	ArrowLeft,
+	ChevronLeft,
+	ChevronRight,
+	ExternalLink,
+	ImageIcon,
+} from "lucide-react";
 import { Link } from "react-router";
 import { ItemActions, SourceMark, WithTooltip } from "~/components/shared";
 import {
+	type adjacentItems,
 	articleBody,
 	type Block,
 	type FeedItem,
-	type relatedItems,
 } from "~/lib/mock-feed";
 import { listItem } from "~/lib/motion";
 import { cn } from "~/lib/utils";
+
+type Adjacent = ReturnType<typeof adjacentItems>;
 
 /** Reading measure; page gutters live on the route's column wrapper. */
 const COLUMN = "mx-auto w-full max-w-content";
@@ -109,13 +117,62 @@ function BlockContent({ block }: { block: Block }) {
 	}
 }
 
+/** Toolbar step button. Disabled as a real `<span>` — a dead link is not a link. */
+function StepLink({
+	to,
+	label,
+	title,
+	icon: Icon,
+}: {
+	to: string | null;
+	label: string;
+	title: string | null;
+	icon: typeof ArrowLeft;
+}) {
+	const shape =
+		"grid size-8 place-items-center rounded-md outline-none transition-colors";
+
+	if (!to) {
+		return (
+			<span
+				aria-hidden
+				className={cn(shape, "cursor-not-allowed text-text-tertiary/40")}
+			>
+				<Icon className="size-4" />
+			</span>
+		);
+	}
+
+	return (
+		// The tooltip names the destination; the aria-label carries it for SR users.
+		<WithTooltip label={title ? `${label}: ${title}` : label}>
+			<Link
+				to={to}
+				aria-label={title ? `${label}: ${title}` : label}
+				className={cn(
+					shape,
+					"text-text-secondary hover:bg-bg-tertiary hover:text-text-primary focus-visible:ring-2 focus-visible:ring-accent",
+				)}
+			>
+				<Icon className="size-4" aria-hidden />
+			</Link>
+		</WithTooltip>
+	);
+}
+
 /**
  * Pane chrome for the reading column. `h-14` matches the feed toolbar's first
  * row and the sidebar brand block, so both panes start their content on the
  * same line. Sticky rather than a sibling of the scroller: this pane scrolls as
  * a whole, since the toolbar needs the item the route loaded.
  */
-export function ArticleToolbar({ item }: { item: FeedItem }) {
+export function ArticleToolbar({
+	item,
+	adjacent,
+}: {
+	item: FeedItem;
+	adjacent: Adjacent;
+}) {
 	return (
 		<div className="sticky top-0 z-10 flex h-14 shrink-0 items-center gap-3 border-b border-border bg-bg-primary px-4 sm:px-6">
 			{/* Only route back to the list where the list is not already beside us. */}
@@ -127,7 +184,27 @@ export function ArticleToolbar({ item }: { item: FeedItem }) {
 				Back to list
 			</Link>
 
-			<div className="ml-auto flex items-center gap-1">
+			<nav
+				aria-label="Article navigation"
+				className="ml-auto flex items-center gap-1"
+			>
+				<StepLink
+					to={adjacent.prev ? `/article/${adjacent.prev.id}` : null}
+					label="Previous article"
+					title={adjacent.prev?.title ?? null}
+					icon={ChevronLeft}
+				/>
+				<StepLink
+					to={adjacent.next ? `/article/${adjacent.next.id}` : null}
+					label="Next article"
+					title={adjacent.next?.title ?? null}
+					icon={ChevronRight}
+				/>
+			</nav>
+
+			<div className="h-5 w-px shrink-0 bg-border" aria-hidden />
+
+			<div className="flex items-center gap-1">
 				<ItemActions
 					title={item.title}
 					buttonClassName="size-8 text-text-secondary hover:bg-bg-tertiary hover:text-text-primary [&_svg]:size-4"
@@ -212,45 +289,67 @@ export function ArticleBody({ item }: { item: FeedItem }) {
 	);
 }
 
-/** Further reading — same source where possible, otherwise same category. */
-export function MoreFromSource({
-	related,
+/** One end of the footer pager: direction label over the destination title. */
+function PagerCard({
+	item,
+	direction,
 }: {
-	related: ReturnType<typeof relatedItems>;
+	item: FeedItem;
+	direction: "prev" | "next";
 }) {
-	if (related.items.length === 0) return null;
+	const next = direction === "next";
 	return (
-		<section
-			aria-labelledby="related-heading"
-			className={cn(COLUMN, "mt-12 border-t border-border-subtle pt-8")}
+		<Link
+			to={`/article/${item.id}`}
+			className={cn(
+				"group flex min-w-0 flex-1 items-center gap-3 rounded-lg border border-border p-4 outline-none transition-colors hover:bg-bg-secondary focus-visible:ring-2 focus-visible:ring-accent",
+				next && "flex-row-reverse text-right",
+			)}
 		>
-			<h2
-				id="related-heading"
-				className="text-lg font-semibold text-text-primary"
-			>
-				{related.label}
-			</h2>
+			{next ? (
+				<ChevronRight
+					className="size-4 shrink-0 text-text-tertiary transition-colors group-hover:text-text-primary"
+					aria-hidden
+				/>
+			) : (
+				<ChevronLeft
+					className="size-4 shrink-0 text-text-tertiary transition-colors group-hover:text-text-primary"
+					aria-hidden
+				/>
+			)}
 
-			<div className="mt-2">
-				{related.items.map((item) => (
-					<Link
-						key={item.id}
-						to={`/article/${item.id}`}
-						className="flex items-center gap-3 rounded-lg p-3 outline-none transition-colors hover:bg-bg-secondary focus-visible:ring-2 focus-visible:ring-accent"
-					>
-						<SourceMark name={item.source} />
-						<span className="line-clamp-2 min-w-0 flex-1 text-sm font-medium text-text-primary">
-							{item.title}
-						</span>
-						<time
-							dateTime={item.iso}
-							className="shrink-0 text-xs text-text-tertiary"
-						>
-							{item.relative}
-						</time>
-					</Link>
-				))}
-			</div>
-		</section>
+			<span className="min-w-0">
+				<span className="block text-xs uppercase tracking-wide text-text-tertiary">
+					{next ? "Next" : "Previous"}
+				</span>
+				<span className="mt-0.5 line-clamp-2 block text-sm font-medium text-text-primary">
+					{item.title}
+				</span>
+			</span>
+		</Link>
+	);
+}
+
+/**
+ * End-of-article pager. Mirrors the toolbar's steps so finishing a piece leads
+ * straight into the next one, without scrolling back up.
+ */
+export function ArticlePager({ adjacent }: { adjacent: Adjacent }) {
+	if (!adjacent.prev && !adjacent.next) return null;
+	return (
+		// Distinct from the toolbar's nav — two landmarks sharing one name is
+		// indistinguishable in a screen reader's landmark list.
+		<nav
+			aria-label="Continue reading"
+			className={cn(
+				COLUMN,
+				"mt-12 flex flex-col gap-3 border-t border-border-subtle pt-8 sm:flex-row",
+			)}
+		>
+			{adjacent.prev && <PagerCard item={adjacent.prev} direction="prev" />}
+			{/* Keeps a lone "next" card on the right where the reader expects it. */}
+			{!adjacent.prev && <div className="hidden flex-1 sm:block" />}
+			{adjacent.next && <PagerCard item={adjacent.next} direction="next" />}
+		</nav>
 	);
 }
