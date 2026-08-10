@@ -29,6 +29,8 @@ export interface FeedItem {
 	iso: string;
 	excerpt: string;
 	read: boolean;
+	/** Saved to the Starred list. */
+	starred: boolean;
 	/** Date-group heading the item sits under. */
 	group: string;
 }
@@ -80,21 +82,6 @@ const SOURCE_COLORS = [
 	"bg-pink-500",
 ];
 
-/** Gradient stand-in for an item image. Literal strings so Tailwind scans them. */
-// ponytail: swap for the real `item.image` once the parser extracts og:image/enclosures.
-const SOURCE_GRADIENTS = [
-	"from-red-500/25",
-	"from-orange-500/25",
-	"from-amber-500/25",
-	"from-emerald-500/25",
-	"from-teal-500/25",
-	"from-blue-500/25",
-	"from-indigo-500/25",
-	"from-violet-500/25",
-	"from-purple-500/25",
-	"from-pink-500/25",
-];
-
 function hash(name: string): number {
 	let sum = 0;
 	for (let i = 0; i < name.length; i++) sum = (sum + name.charCodeAt(i)) % 997;
@@ -105,15 +92,11 @@ export function sourceColor(name: string): string {
 	return SOURCE_COLORS[hash(name) % SOURCE_COLORS.length];
 }
 
-export function sourceGradient(name: string): string {
-	return SOURCE_GRADIENTS[hash(name) % SOURCE_GRADIENTS.length];
-}
-
 export const categories: Category[] = [
 	{
 		name: "Frontend",
 		unread: 14,
-		expanded: true,
+		expanded: false,
 		feeds: [
 			{ id: "css-tricks", title: "CSS-Tricks", unread: 3 },
 			{ id: "smashing", title: "Smashing Magazine", unread: 4 },
@@ -125,7 +108,7 @@ export const categories: Category[] = [
 	{
 		name: "Design",
 		unread: 11,
-		expanded: true,
+		expanded: false,
 		feeds: [
 			{ id: "sidebar", title: "Sidebar.io", unread: 5 },
 			{ id: "nng", title: "NN Group", unread: 2 },
@@ -162,8 +145,19 @@ export const categories: Category[] = [
 	},
 ];
 
-export const unreadTotal = categories.reduce((sum, c) => sum + c.unread, 0);
-export const savedCount = 12;
+/*
+ * Feeds filed in no category. They sit flat in the sidebar alongside the
+ * category folders rather than inside an "Uncategorized" group of their own.
+ */
+export const uncategorized: Feed[] = [
+	{ id: "mdn", title: "MDN Blog", unread: 2 },
+	{ id: "alistapart", title: "A List Apart", unread: 1 },
+	{ id: "github-blog", title: "The GitHub Blog", unread: 4 },
+];
+
+export const unreadTotal =
+	categories.reduce((sum, c) => sum + c.unread, 0) +
+	uncategorized.reduce((sum, feed) => sum + feed.unread, 0);
 
 export const feedItems: FeedItem[] = [
 	{
@@ -178,6 +172,7 @@ export const feedItems: FeedItem[] = [
 		excerpt:
 			"Color blindness affects roughly 8% of men and 0.5% of women worldwide. Yet most interfaces rely heavily on color to convey meaning, status, and hierarchy. Here's how to design interfaces that work for everyone without sacrificing visual richness.",
 		read: false,
+		starred: false,
 		group: "Today",
 	},
 	{
@@ -192,6 +187,7 @@ export const feedItems: FeedItem[] = [
 		excerpt:
 			"Our engineering team spent the last quarter rethinking how we cache at the edge. The result: dramatically lower tail latency for our most demanding customers, and lessons applicable to any distributed system.",
 		read: false,
+		starred: true,
 		group: "Today",
 	},
 	{
@@ -206,6 +202,7 @@ export const feedItems: FeedItem[] = [
 		excerpt:
 			"After months of experimenting with retrieval-augmented generation in real applications, here's what I've learned about chunking strategies, embedding models, and the surprising importance of metadata filtering.",
 		read: false,
+		starred: true,
 		group: "Today",
 	},
 	{
@@ -220,6 +217,7 @@ export const feedItems: FeedItem[] = [
 		excerpt:
 			"Container queries have been available for a while now, but most developers are still using them like media queries with a different syntax. There's a much more powerful mental model that unlocks truly reusable components.",
 		read: false,
+		starred: false,
 		group: "Today",
 	},
 	{
@@ -234,6 +232,7 @@ export const feedItems: FeedItem[] = [
 		excerpt:
 			"Variables in Figma now support conditional logic, mathematical expressions, and cross-file references. This unlocks design system workflows that were previously only possible in code.",
 		read: false,
+		starred: false,
 		group: "Today",
 	},
 	{
@@ -248,6 +247,7 @@ export const feedItems: FeedItem[] = [
 		excerpt:
 			"Give every reviewer a live URL and the review conversation changes entirely. A look at the infrastructure that makes ephemeral environments cheap enough to spin up on every commit.",
 		read: true,
+		starred: false,
 		group: "Yesterday",
 	},
 	{
@@ -262,6 +262,7 @@ export const feedItems: FeedItem[] = [
 		excerpt:
 			"Parallelism only got us halfway. The real wins came from deleting tests that asserted nothing and fixing the three that were secretly flaky the whole time.",
 		read: true,
+		starred: true,
 		group: "Yesterday",
 	},
 	{
@@ -276,6 +277,7 @@ export const feedItems: FeedItem[] = [
 		excerpt:
 			"The default focus ring is the most-removed accessibility feature on the web. Here is how to design one that fits your brand and still passes contrast requirements.",
 		read: true,
+		starred: true,
 		group: "Earlier this week",
 	},
 	{
@@ -290,6 +292,7 @@ export const feedItems: FeedItem[] = [
 		excerpt:
 			"Free-text responses are a parsing nightmare. Schema-constrained output turned a fun demo into something I am willing to put in a production pipeline.",
 		read: true,
+		starred: false,
 		group: "Earlier this week",
 	},
 	{
@@ -304,6 +307,7 @@ export const feedItems: FeedItem[] = [
 		excerpt:
 			"Gap looks simple until it meets wrapping, margins and nested flex containers. A visual walkthrough of the cases that trip people up.",
 		read: true,
+		starred: false,
 		group: "Earlier this week",
 	},
 	{
@@ -318,6 +322,7 @@ export const feedItems: FeedItem[] = [
 		excerpt:
 			"Coordinating counters across hundreds of locations is expensive. Approximate counting gets you most of the protection for a fraction of the latency.",
 		read: true,
+		starred: false,
 		group: "Earlier this week",
 	},
 ];
@@ -419,11 +424,4 @@ export function relatedItems(item: FeedItem) {
 	};
 }
 
-// ponytail: canned text standing in for the AI summary differentiator — swap for
-// a cached, Zod-validated Mistral call (server-side) when that feature is picked.
-export function aiSummary(item: FeedItem): string[] {
-	return [
-		`${item.title.replace(/[.?!]$/, "")} — in short: ${item.excerpt.slice(0, 120).trim()}…`,
-		"The piece argues that the fix is mostly subtraction: measure the thing you actually care about, delete the layers added for a use case that never shipped, and make the budget fail the build.",
-	];
-}
+export const starredCount = feedItems.filter((i) => i.starred).length;
