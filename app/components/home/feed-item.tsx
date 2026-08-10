@@ -4,21 +4,41 @@ import {
 	ItemActions,
 	REVEAL,
 	SourceMark,
-	Thumbnail,
 	UnreadDot,
 } from "~/components/shared";
+import type { FeedTimestamp } from "~/lib/feed-view";
 import { categoryStyles, type FeedItem } from "~/lib/mock-feed";
 import { listItem } from "~/lib/motion";
 import { cn } from "~/lib/utils";
 
-/** Full row with excerpt — the default reading layout. */
-export function FeedItemRow({ item }: { item: FeedItem }) {
+/*
+ * Rows size themselves off the feed column's own width (`@container` on the pane),
+ * not the viewport: the same component sits in a ~24rem split pane and in a
+ * full-width column below xl. Under 28rem it sheds the action gutter, the badge
+ * and a line of excerpt — acting on an item happens in the reader pane instead.
+ */
+
+/** Full row with excerpt — the default reading density. */
+export function FeedItemRow({
+	item,
+	current,
+	timestamp,
+}: {
+	item: FeedItem;
+	current?: boolean;
+	timestamp: FeedTimestamp;
+}) {
 	const badge = categoryStyles[item.category]?.badge;
 	return (
 		<motion.article variants={listItem} className="group relative">
 			<Link
 				to={`/article/${item.id}`}
-				className="flex items-start gap-3 rounded-lg px-4 py-4 pr-28 outline-none transition-colors hover:bg-bg-secondary focus-visible:ring-2 focus-visible:ring-accent sm:px-6"
+				aria-current={current ? "page" : undefined}
+				className={cn(
+					"flex items-start gap-3 rounded-lg py-4 pl-4 pr-3 outline-none transition-colors focus-visible:ring-2 focus-visible:ring-accent",
+					"@min-[28rem]:pl-6 @min-[28rem]:pr-28",
+					current ? "bg-accent-subtle" : "hover:bg-bg-secondary",
+				)}
 			>
 				<UnreadDot read={item.read} className="mt-1.5" />
 				<div
@@ -28,96 +48,41 @@ export function FeedItemRow({ item }: { item: FeedItem }) {
 					)}
 				>
 					<div className="flex items-center gap-2 text-sm text-text-secondary">
-						<SourceMark name={item.source} />
-						<span className="font-medium text-text-primary">{item.source}</span>
-						<span className="text-text-tertiary">·</span>
-						<time className="text-text-tertiary" title={item.time}>
-							{item.relative}
-						</time>
-						{!item.read && <span className="sr-only">unread</span>}
-					</div>
-
-					<h3
-						className={cn(
-							"text-lg text-text-primary",
-							item.read ? "font-medium" : "font-semibold",
-						)}
-					>
-						{item.title}
-					</h3>
-
-					<p className="line-clamp-2 text-sm text-text-secondary">
-						{item.excerpt}
-					</p>
-
-					<span
-						className={cn(
-							"mt-1 inline-flex w-fit items-center rounded-sm px-2 py-0.5 text-xs font-medium",
-							badge,
-						)}
-					>
-						{item.category}
-					</span>
-				</div>
-			</Link>
-
-			<ItemActions
-				title={item.title}
-				className={cn("absolute right-4 top-4", REVEAL)}
-			/>
-		</motion.article>
-	);
-}
-
-/** Bordered card for the grid layout. */
-export function FeedItemCard({ item }: { item: FeedItem }) {
-	const badge = categoryStyles[item.category]?.badge;
-	return (
-		<motion.article
-			variants={listItem}
-			whileHover={{ scale: 1.015 }}
-			whileTap={{ scale: 0.99 }}
-			className="group relative flex flex-col overflow-hidden rounded-lg border border-border bg-surface shadow-sm transition-colors hover:border-border-subtle hover:shadow-md"
-		>
-			<Link
-				to={`/article/${item.id}`}
-				className={cn(
-					"flex flex-1 flex-col rounded-lg outline-none focus-visible:ring-2 focus-visible:ring-accent",
-					item.read && "opacity-70",
-				)}
-			>
-				<div className="flex flex-1 flex-col gap-2 p-4">
-					<div className="flex items-center gap-2 text-sm">
-						<UnreadDot read={item.read} />
-						<SourceMark name={item.source} className="size-4 text-[0.5rem]" />
+						<SourceMark
+							name={item.source}
+							tone="bare"
+							className="size-4 text-[0.65rem]"
+						/>
 						<span className="truncate font-medium text-text-primary">
 							{item.source}
 						</span>
+						<span className="text-text-tertiary">·</span>
 						<time
-							className="ml-auto shrink-0 text-xs text-text-tertiary"
-							title={item.time}
+							className="shrink-0 text-text-tertiary"
+							dateTime={item.iso}
+							title={timestamp === "absolute" ? item.relative : item.time}
 						>
-							{item.relative}
+							{timestamp === "absolute" ? item.time : item.relative}
 						</time>
 						{!item.read && <span className="sr-only">unread</span>}
 					</div>
 
 					<h3
 						className={cn(
-							"text-base text-text-primary",
+							"text-base text-text-primary @min-[28rem]:text-lg",
 							item.read ? "font-medium" : "font-semibold",
 						)}
 					>
 						{item.title}
 					</h3>
 
-					<p className="line-clamp-2 text-sm text-text-secondary">
+					<p className="line-clamp-1 text-sm text-text-secondary @min-[28rem]:line-clamp-2">
 						{item.excerpt}
 					</p>
 
 					<span
 						className={cn(
-							"mt-auto inline-flex w-fit items-center rounded-sm px-2 py-0.5 text-xs font-medium",
+							"mt-1 hidden w-fit items-center rounded-sm px-2 py-0.5 text-xs font-medium @min-[28rem]:inline-flex",
 							badge,
 						)}
 					>
@@ -128,23 +93,42 @@ export function FeedItemCard({ item }: { item: FeedItem }) {
 
 			<ItemActions
 				title={item.title}
-				className={cn("absolute bottom-2 right-2", REVEAL)}
-				buttonClassName="size-8 [&_svg]:size-4"
+				className={cn(
+					"absolute right-4 top-4 hidden @min-[28rem]:flex",
+					REVEAL,
+				)}
 			/>
 		</motion.article>
 	);
 }
 
-/** Dense single-line row for the compact layout. */
-export function FeedItemCompact({ item }: { item: FeedItem }) {
+/** Dense single-line row for the compact density. */
+export function FeedItemCompact({
+	item,
+	current,
+	timestamp,
+}: {
+	item: FeedItem;
+	current?: boolean;
+	timestamp: FeedTimestamp;
+}) {
 	return (
 		<motion.article variants={listItem} className="group relative">
 			<Link
 				to={`/article/${item.id}`}
-				className="flex items-center gap-3 rounded-md px-4 py-2 pr-20 outline-none transition-colors hover:bg-bg-secondary focus-visible:ring-2 focus-visible:ring-accent sm:px-6"
+				aria-current={current ? "page" : undefined}
+				className={cn(
+					"flex items-center gap-3 rounded-md py-2 pl-4 pr-3 outline-none transition-colors focus-visible:ring-2 focus-visible:ring-accent",
+					"@min-[28rem]:pl-6 @min-[28rem]:pr-20",
+					current ? "bg-accent-subtle" : "hover:bg-bg-secondary",
+				)}
 			>
 				<UnreadDot read={item.read} />
-				<SourceMark name={item.source} className="size-4 text-[0.5rem]" />
+				<SourceMark
+					name={item.source}
+					tone="bare"
+					className="size-4 text-[0.65rem]"
+				/>
 				<h3
 					className={cn(
 						"min-w-0 flex-1 truncate text-sm",
@@ -156,15 +140,23 @@ export function FeedItemCompact({ item }: { item: FeedItem }) {
 					{item.title}
 					{!item.read && <span className="sr-only"> (unread)</span>}
 				</h3>
-				<span className="ml-auto hidden shrink-0 items-center gap-2 text-xs text-text-tertiary transition-opacity group-hover:opacity-0 group-focus-within:opacity-0 sm:flex">
+				<span className="ml-auto hidden shrink-0 items-center gap-2 text-xs text-text-tertiary transition-opacity group-hover:opacity-0 group-focus-within:opacity-0 @min-[28rem]:flex">
 					<span className="max-w-[12rem] truncate">{item.source}</span>
-					<time title={item.time}>{item.relative}</time>
+					<time
+						dateTime={item.iso}
+						title={timestamp === "absolute" ? item.relative : item.time}
+					>
+						{timestamp === "absolute" ? item.time : item.relative}
+					</time>
 				</span>
 			</Link>
 
 			<ItemActions
 				title={item.title}
-				className={cn("absolute right-3 top-1/2 -translate-y-1/2", REVEAL)}
+				className={cn(
+					"absolute right-3 top-1/2 hidden -translate-y-1/2 @min-[28rem]:flex",
+					REVEAL,
+				)}
 				buttonClassName="size-7 [&_svg]:size-4"
 			/>
 		</motion.article>
