@@ -1,11 +1,11 @@
-import { Bookmark, ImageIcon, Share2 } from "lucide-react";
+import { Share2, Star } from "lucide-react";
 import { Button } from "~/components/ui/button";
 import {
 	Tooltip,
 	TooltipContent,
 	TooltipTrigger,
 } from "~/components/ui/tooltip";
-import { sourceColor, sourceGradient } from "~/lib/mock-feed";
+import { sourceColor } from "~/lib/mock-feed";
 import { cn } from "~/lib/utils";
 
 /** Shown on hover or keyboard focus (always visible on touch, which lacks hover). */
@@ -28,20 +28,31 @@ export function WithTooltip({
 	);
 }
 
-/** Colored letter tile standing in for a source favicon (no network in mock UI). */
+/**
+ * Letter tile standing in for a source favicon (no network in mock UI).
+ *
+ * Neutral by default: a per-source hue carries no information, and a dozen of
+ * them in a list drown out the unread dot, which does. `tone="color"` is for
+ * places showing a single source, where the hue reads as identity not noise.
+ */
 export function SourceMark({
 	name,
 	className,
+	tone = "neutral",
 }: {
 	name: string;
 	className?: string;
+	/** `bare` drops the tile entirely — just the initial, for dense lists. */
+	tone?: "neutral" | "color" | "bare";
 }) {
 	return (
 		<span
 			aria-hidden
 			className={cn(
-				"grid size-5 shrink-0 place-items-center rounded-[0.3rem] text-[0.6rem] font-semibold text-white",
-				sourceColor(name),
+				"grid size-5 shrink-0 place-items-center rounded-[0.3rem] text-[0.6rem] font-semibold",
+				tone === "color" && cn("text-white", sourceColor(name)),
+				tone === "neutral" && "bg-bg-tertiary text-text-secondary",
+				tone === "bare" && "text-text-tertiary",
 				className,
 			)}
 		>
@@ -50,32 +61,7 @@ export function SourceMark({
 	);
 }
 
-/**
- * Stand-in for an item image: deterministic gradient + glyph, no network.
- * Decorative — the title carries the meaning, so it stays out of the a11y tree.
- */
-export function Thumbnail({
-	source,
-	className,
-}: {
-	source: string;
-	className?: string;
-}) {
-	return (
-		<div
-			aria-hidden
-			className={cn(
-				"grid shrink-0 place-items-center bg-linear-to-br to-bg-tertiary",
-				sourceGradient(source),
-				className,
-			)}
-		>
-			<ImageIcon className="size-6 text-text-tertiary/60" />
-		</div>
-	);
-}
-
-// ponytail: save/share are presentational — wire actions when bookmarks land.
+// ponytail: star/share are presentational — wire actions when starring lands.
 export function ItemActions({
 	title,
 	className,
@@ -87,14 +73,14 @@ export function ItemActions({
 }) {
 	return (
 		<div className={cn("flex gap-1", className)}>
-			<WithTooltip label="Save">
+			<WithTooltip label="Star">
 				<Button
 					variant="ghost"
 					size="icon"
 					className={buttonClassName}
-					aria-label={`Save "${title}"`}
+					aria-label={`Star "${title}"`}
 				>
-					<Bookmark />
+					<Star />
 				</Button>
 			</WithTooltip>
 			<WithTooltip label="Share">

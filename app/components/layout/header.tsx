@@ -1,13 +1,22 @@
 import { Plus, Rss, Search } from "lucide-react";
+import { Link } from "react-router";
 import { WithTooltip } from "~/components/shared";
 import { ThemeToggle } from "~/components/theme-toggle";
-import { Button } from "~/components/ui/button";
+import { buttonVariants } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 
+/**
+ * Mobile-only chrome. At `lg` and up the sidebar is visible and carries the
+ * brand, search and navigation, so this bar would only duplicate it — below
+ * `lg` the sidebar is hidden and this is the only chrome there is.
+ */
 export function TopHeader() {
 	return (
-		<header className="sticky top-0 z-20 flex h-14 items-center gap-4 border-b border-border bg-bg-primary px-4">
-			<div className="flex items-center gap-2">
+		<header className="sticky top-0 z-20 flex h-14 shrink-0 items-center gap-3 border-b border-border bg-bg-primary px-4 lg:hidden">
+			<Link
+				to="/"
+				className="flex items-center gap-2 rounded-md outline-none focus-visible:ring-2 focus-visible:ring-accent"
+			>
 				<span
 					aria-hidden
 					className="grid size-7 place-items-center rounded-md bg-accent text-white"
@@ -17,32 +26,9 @@ export function TopHeader() {
 				<span className="text-lg font-semibold text-text-primary">
 					Frontpage
 				</span>
-			</div>
+			</Link>
 
-			{/* ponytail: tabs are presentational — Digest/Discover routes not built yet. */}
-			<nav aria-label="Sections" className="hidden items-center gap-1 sm:flex">
-				<a
-					href="/"
-					aria-current="page"
-					className="rounded-md bg-bg-tertiary px-3 py-1.5 text-sm font-medium text-text-primary"
-				>
-					Feed
-				</a>
-				<a
-					href="/digest"
-					className="rounded-md px-3 py-1.5 text-sm text-text-secondary transition-colors hover:bg-bg-tertiary hover:text-text-primary"
-				>
-					Digest
-				</a>
-				<a
-					href="/discover"
-					className="rounded-md px-3 py-1.5 text-sm text-text-secondary transition-colors hover:bg-bg-tertiary hover:text-text-primary"
-				>
-					Discover
-				</a>
-			</nav>
-
-			<div className="relative mx-auto hidden w-full max-w-md md:block">
+			<div className="relative ml-auto hidden w-full max-w-xs sm:block">
 				<Search
 					className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-text-tertiary"
 					aria-hidden
@@ -51,19 +37,20 @@ export function TopHeader() {
 					type="search"
 					placeholder="Search articles…"
 					aria-label="Search articles"
-					className="bg-bg-secondary pl-9 pr-9"
+					className="bg-bg-secondary pl-9"
 				/>
-				<kbd className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 rounded border border-border bg-bg-primary px-1.5 py-0.5 text-xs text-text-tertiary">
-					/
-				</kbd>
 			</div>
 
-			<div className="ml-auto flex items-center gap-1 md:ml-0">
+			<div className="ml-auto flex items-center gap-1 sm:ml-0">
 				<ThemeToggle />
 				<WithTooltip label="Add feed">
-					<Button variant="ghost" size="icon" aria-label="Add feed">
+					<Link
+						to="/discover"
+						aria-label="Add feed"
+						className={buttonVariants({ variant: "ghost", size: "icon" })}
+					>
 						<Plus />
-					</Button>
+					</Link>
 				</WithTooltip>
 				<span
 					aria-hidden
