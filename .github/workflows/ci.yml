@@ -57,7 +57,7 @@ jobs:
           node-version: 24
           cache: npm
       - run: npm ci
-      - run: npm run build
+      - run: CLOUDFLARE_ENV=staging npm run build
       - run: npx wrangler deploy --env staging
 
   deploy-preview:
