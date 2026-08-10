@@ -1,6 +1,5 @@
 @import "tailwindcss";
 @import "./styles/tokens.css";
-@plugin "@tailwindcss/typography";
 
 /* Class-based dark variant: styles apply under <html class="dark">. */
 @custom-variant dark (&:where(.dark, .dark *));
@@ -31,8 +30,6 @@
 
 @theme {
 	--font-sans: "Inter", system-ui, -apple-system, sans-serif;
-	/* Reader view type. Newsreader replaces the brand kit's Georgia (see README). */
-	--font-serif: "Newsreader", "Georgia", "Charter", serif;
 	--font-mono: "JetBrains Mono", "SF Mono", "Fira Code", monospace;
 
 	--text-xs: 0.6875rem;

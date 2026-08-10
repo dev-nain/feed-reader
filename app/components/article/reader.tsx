@@ -1,103 +1,174 @@
 import { motion } from "framer-motion";
-import { ExternalLink, ImageIcon, Sparkles } from "lucide-react";
+import { ArrowLeft, ExternalLink, ImageIcon } from "lucide-react";
 import { Link } from "react-router";
-import { SourceMark } from "~/components/shared";
-import { Badge } from "~/components/ui/badge";
+import { ItemActions, SourceMark, WithTooltip } from "~/components/shared";
 import {
-	aiSummary,
 	articleBody,
 	type Block,
-	categoryStyles,
 	type FeedItem,
 	type relatedItems,
 } from "~/lib/mock-feed";
 import { listItem } from "~/lib/motion";
 import { cn } from "~/lib/utils";
 
-/** Reading measure; page gutters live on the route's grid wrapper. */
+/** Reading measure; page gutters live on the route's column wrapper. */
 const COLUMN = "mx-auto w-full max-w-content";
+
+/**
+ * Body copy is --text-base: 16px on 1.55. Paragraphs are separated by ~1.2em of
+ * space rather than a larger size — the reference reader carries long-form at UI
+ * size and buys legibility with leading and rhythm instead.
+ */
+const BODY = "text-base text-text-primary";
 
 /** Renders `backtick` spans as inline code; everything else stays plain text. */
 function withInlineCode(text: string) {
 	return text.split(/`([^`]+)`/).map((part, i) =>
 		i % 2 === 1 ? (
-			// biome-ignore lint/suspicious/noArrayIndexKey: split output is positional
-			<code key={i}>{part}</code>
+			<code
+				// biome-ignore lint/suspicious/noArrayIndexKey: split output is positional
+				key={i}
+				className="rounded-[5px] bg-bg-tertiary px-[5px] py-px font-mono text-[0.9em]"
+			>
+				{part}
+			</code>
 		) : (
 			part
 		),
 	);
 }
 
+/**
+ * Block styles are written directly rather than via a prose plugin: the Block
+ * union is closed, so every element here is authored anyway, and the plugin's
+ * em-cascade pushed headings off the brand scale (h2 landed at 30px, a hair
+ * under the 31px title).
+ */
 function BlockContent({ block }: { block: Block }) {
 	switch (block.type) {
 		case "h2":
-			return <h2>{block.text}</h2>;
+			return (
+				<h2 className="mt-8 mb-3 text-xl font-bold leading-snug text-text-primary text-balance">
+					{block.text}
+				</h2>
+			);
 		case "h3":
-			return <h3>{block.text}</h3>;
+			return (
+				<h3 className="mt-6 mb-2 text-lg font-bold leading-normal text-text-primary text-balance">
+					{block.text}
+				</h3>
+			);
 		case "p":
-			return <p>{withInlineCode(block.text)}</p>;
+			return <p className={cn("my-5", BODY)}>{withInlineCode(block.text)}</p>;
 		case "quote":
 			return (
-				<blockquote>
-					<p>{block.text}</p>
+				<blockquote className="my-5 border-l-[3px] border-border pl-3">
+					<p className="text-base text-text-secondary">{block.text}</p>
 				</blockquote>
 			);
 		case "code":
 			return (
-				<pre>
-					<code>{block.text}</code>
+				<pre className="my-5 overflow-x-auto rounded-lg bg-bg-tertiary px-3 py-2.5">
+					<code className="font-mono text-[0.9em] text-text-primary">
+						{block.text}
+					</code>
 				</pre>
 			);
 		// ponytail: placeholder tile — real feed images land with the parser.
 		case "image":
 			return (
-				<figure>
+				<figure className="my-5">
 					<div className="grid h-56 place-items-center rounded-lg border border-border bg-bg-secondary sm:h-72">
 						<ImageIcon className="size-8 text-text-tertiary" aria-hidden />
 					</div>
-					<figcaption>{block.text}</figcaption>
+					<figcaption className="mt-2 text-sm text-text-tertiary">
+						{block.text}
+					</figcaption>
 				</figure>
 			);
 		case "ul":
 			return (
-				<ul>
+				<ul className="my-5 list-disc space-y-1 pl-6 marker:text-text-tertiary">
 					{block.items.map((li) => (
-						<li key={li}>{withInlineCode(li)}</li>
+						<li key={li} className={BODY}>
+							{withInlineCode(li)}
+						</li>
 					))}
 				</ul>
 			);
 		case "ol":
 			return (
-				<ol>
+				<ol className="my-5 list-decimal space-y-1 pl-6 marker:text-text-tertiary">
 					{block.items.map((li) => (
-						<li key={li}>{withInlineCode(li)}</li>
+						<li key={li} className={BODY}>
+							{withInlineCode(li)}
+						</li>
 					))}
 				</ol>
 			);
 	}
 }
 
-export function ArticleHeader({ item }: { item: FeedItem }) {
-	const badge = categoryStyles[item.category]?.badge;
+/**
+ * Pane chrome for the reading column. `h-14` matches the feed toolbar's first
+ * row and the sidebar brand block, so both panes start their content on the
+ * same line. Sticky rather than a sibling of the scroller: this pane scrolls as
+ * a whole, since the toolbar needs the item the route loaded.
+ */
+export function ArticleToolbar({ item }: { item: FeedItem }) {
 	return (
-		<header className={cn(COLUMN, "border-b border-border-subtle pb-6 pt-10")}>
-			<span
-				className={cn(
-					"inline-flex w-fit items-center rounded-sm px-2 py-0.5 text-xs font-medium",
-					badge,
-				)}
+		<div className="sticky top-0 z-10 flex h-14 shrink-0 items-center gap-3 border-b border-border bg-bg-primary px-4 sm:px-6">
+			{/* Only route back to the list where the list is not already beside us. */}
+			<Link
+				to="/"
+				className="inline-flex items-center gap-1.5 rounded-md text-sm text-text-secondary outline-none transition-colors hover:text-text-primary focus-visible:ring-2 focus-visible:ring-accent xl:hidden"
 			>
-				{item.category}
-			</span>
+				<ArrowLeft className="size-4" aria-hidden />
+				Back to list
+			</Link>
 
-			<h1 className="mt-3 text-2xl font-bold tracking-tight text-balance text-text-primary sm:text-3xl">
-				{item.title}
+			<div className="ml-auto flex items-center gap-1">
+				<ItemActions
+					title={item.title}
+					buttonClassName="size-8 text-text-secondary hover:bg-bg-tertiary hover:text-text-primary [&_svg]:size-4"
+				/>
+				<WithTooltip label="Open original">
+					<a
+						href="https://example.com/article"
+						target="_blank"
+						rel="noreferrer noopener"
+						aria-label="Open original article in a new tab"
+						className="grid size-8 place-items-center rounded-md text-text-secondary outline-none transition-colors hover:bg-bg-tertiary hover:text-text-primary focus-visible:ring-2 focus-visible:ring-accent"
+					>
+						<ExternalLink className="size-4" aria-hidden />
+					</a>
+				</WithTooltip>
+			</div>
+		</div>
+	);
+}
+
+export function ArticleHeader({ item }: { item: FeedItem }) {
+	return (
+		<header className={cn(COLUMN, "border-b border-border-subtle pt-10 pb-8")}>
+			{/* ponytail: mock items carry no link yet — swap for item.url with the parser. */}
+			{/* 30px/1.3 bold, held flat across breakpoints — the reference title
+			    does not scale up on wide screens, it just gets more margin. */}
+			<h1 className="text-2xl font-bold leading-snug text-balance text-text-primary">
+				<a
+					href="https://example.com/article"
+					target="_blank"
+					rel="noreferrer noopener"
+					className="rounded-md outline-none hover:underline focus-visible:ring-2 focus-visible:ring-accent"
+				>
+					{item.title}
+					<span className="sr-only"> (opens the original in a new tab)</span>
+				</a>
 			</h1>
 
-			<div className="mt-4 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-text-secondary">
-				<SourceMark name={item.source} />
-				<span className="font-medium text-text-primary">{item.source}</span>
+			<div className="mt-5 flex flex-wrap items-center gap-x-2 gap-y-2 text-sm text-text-secondary">
+				<SourceMark name={item.source} tone="color" />
+				<span className="font-semibold text-text-primary">{item.source}</span>
 				<span className="text-text-tertiary">·</span>
 				<span>{item.author}</span>
 				<span className="text-text-tertiary">·</span>
@@ -111,36 +182,26 @@ export function ArticleHeader({ item }: { item: FeedItem }) {
 
 export function ArticleBody({ item }: { item: FeedItem }) {
 	return (
-		<motion.div
-			variants={listItem}
-			initial="hidden"
-			animate="show"
-			className={cn(COLUMN, "py-8")}
-		>
-			<div
-				className={cn(
-					"prose prose-lg dark:prose-invert max-w-none",
-					"prose-headings:font-sans prose-headings:text-text-primary",
-					"prose-p:font-serif prose-p:text-text-secondary prose-li:font-serif prose-li:text-text-secondary",
-					"prose-a:text-accent prose-strong:text-text-primary",
-					"prose-code:font-mono prose-code:text-text-primary",
-					"prose-pre:border prose-pre:border-border prose-pre:bg-bg-secondary prose-pre:text-text-primary",
-					"prose-blockquote:border-l-accent prose-blockquote:font-serif prose-blockquote:text-text-primary",
-					"prose-figcaption:text-text-tertiary prose-img:rounded-lg",
-				)}
-			>
+		<motion.div variants={listItem} initial="hidden" animate="show">
+			{/* Measure in ch, so it tracks the body size rather than fighting it. */}
+			<div className="mx-auto max-w-[68ch] py-10">
 				{articleBody(item).map((block, i) => (
 					// biome-ignore lint/suspicious/noArrayIndexKey: static mock body, stable order
 					<BlockContent key={i} block={block} />
 				))}
 			</div>
 
-			<p className="mt-10 border-t border-border-subtle pt-6 text-sm text-text-secondary">
+			<p
+				className={cn(
+					COLUMN,
+					"mt-12 border-t border-border-subtle pt-8 text-sm text-text-secondary",
+				)}
+			>
 				<a
 					href="https://example.com/article"
 					target="_blank"
 					rel="noreferrer noopener"
-					className="inline-flex items-center gap-1.5 rounded-sm text-accent underline-offset-4 outline-none hover:underline focus-visible:ring-2 focus-visible:ring-accent"
+					className="inline-flex items-center gap-1.5 rounded-sm text-accent underline underline-offset-4 outline-none focus-visible:ring-2 focus-visible:ring-accent"
 				>
 					Read the full article at {item.source}
 					<ExternalLink className="size-4" aria-hidden />
@@ -148,85 +209,6 @@ export function ArticleBody({ item }: { item: FeedItem }) {
 				</a>
 			</p>
 		</motion.div>
-	);
-}
-
-const PANEL = "rounded-lg border border-border bg-bg-secondary p-4";
-
-/** Context rail: AI summary + source facts. Sticks beside the article on wide screens. */
-export function ArticleAside({ item }: { item: FeedItem }) {
-	return (
-		<aside
-			aria-label="Article context"
-			className="mt-8 space-y-4 self-start xl:sticky xl:top-6 xl:mt-10"
-		>
-			<section className={PANEL} aria-labelledby="ai-summary-heading">
-				<div className="flex items-center gap-2">
-					<Sparkles className="size-4 text-accent" aria-hidden />
-					<h2
-						id="ai-summary-heading"
-						className="text-sm font-semibold text-text-primary"
-					>
-						AI Summary
-					</h2>
-					<Badge variant="accent" className="ml-auto">
-						Beta
-					</Badge>
-				</div>
-
-				<div className="mt-3 space-y-2 text-sm text-text-secondary">
-					{aiSummary(item).map((paragraph) => (
-						<p key={paragraph}>{paragraph}</p>
-					))}
-				</div>
-
-				<p className="mt-3 border-t border-border-subtle pt-3 text-xs text-text-tertiary">
-					Generated summary — may contain errors. Read the article for detail.
-				</p>
-			</section>
-
-			<section className={PANEL} aria-labelledby="source-details-heading">
-				<h2
-					id="source-details-heading"
-					className="text-sm font-semibold text-text-primary"
-				>
-					Source Details
-				</h2>
-
-				<div className="mt-3 flex items-center gap-2">
-					<SourceMark name={item.source} />
-					<span className="truncate text-sm font-medium text-text-primary">
-						{item.source}
-					</span>
-				</div>
-
-				<dl className="mt-3 space-y-2.5">
-					{[
-						{ term: "Author", value: item.author },
-						{ term: "Published", value: item.time },
-						{ term: "Category", value: item.category },
-					].map(({ term, value }) => (
-						<div key={term}>
-							<dt className="text-xs uppercase tracking-wide text-text-tertiary">
-								{term}
-							</dt>
-							<dd className="text-sm text-text-primary">{value}</dd>
-						</div>
-					))}
-				</dl>
-
-				<a
-					href="https://example.com"
-					target="_blank"
-					rel="noreferrer noopener"
-					className="mt-4 inline-flex items-center gap-1.5 rounded-sm text-sm text-accent underline-offset-4 outline-none hover:underline focus-visible:ring-2 focus-visible:ring-accent"
-				>
-					Visit {item.source}
-					<ExternalLink className="size-4" aria-hidden />
-					<span className="sr-only">(opens in a new tab)</span>
-				</a>
-			</section>
-		</aside>
 	);
 }
 
@@ -240,7 +222,7 @@ export function MoreFromSource({
 	return (
 		<section
 			aria-labelledby="related-heading"
-			className={cn(COLUMN, "border-t border-border-subtle pt-6")}
+			className={cn(COLUMN, "mt-12 border-t border-border-subtle pt-8")}
 		>
 			<h2
 				id="related-heading"
