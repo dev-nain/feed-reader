@@ -3,16 +3,16 @@ import { data } from "react-router";
 import {
 	ArticleBody,
 	ArticleHeader,
+	ArticlePager,
 	ArticleToolbar,
-	MoreFromSource,
 } from "~/components/article/reader";
-import { findItem, relatedItems } from "~/lib/mock-feed";
+import { adjacentItems, findItem } from "~/lib/mock-feed";
 import type { Route } from "./+types/article";
 
 export async function loader({ params }: Route.LoaderArgs) {
 	const item = findItem(params.id);
 	if (!item) throw data(null, { status: 404, statusText: "Article not found" });
-	return { item, related: relatedItems(item) };
+	return { item, adjacent: adjacentItems(item) };
 }
 
 export function meta({ loaderData }: Route.MetaArgs) {
@@ -24,7 +24,7 @@ export function meta({ loaderData }: Route.MetaArgs) {
 }
 
 export default function Article({ loaderData }: Route.ComponentProps) {
-	const { item, related } = loaderData;
+	const { item, adjacent } = loaderData;
 	const heading = useRef<HTMLDivElement>(null);
 
 	// Selecting from the list swaps this pane's content without moving focus;
@@ -35,7 +35,7 @@ export default function Article({ loaderData }: Route.ComponentProps) {
 
 	return (
 		<main className="relative">
-			<ArticleToolbar item={item} />
+			<ArticleToolbar item={item} adjacent={adjacent} />
 
 			{/*
 			 * One centred reading column at every width — the pane is far narrower
@@ -47,7 +47,7 @@ export default function Article({ loaderData }: Route.ComponentProps) {
 					<ArticleBody item={item} />
 				</article>
 
-				<MoreFromSource related={related} />
+				<ArticlePager adjacent={adjacent} />
 			</div>
 		</main>
 	);

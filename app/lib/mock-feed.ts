@@ -407,20 +407,17 @@ export function findItem(id: string): FeedItem | undefined {
 }
 
 /**
- * Further reading for the article footer: other items from the same source,
- * else others in the same category. Empty when the source has no siblings.
+ * The items either side of this one, in feed order — the same order the list
+ * column shows, so "next" always means the row below the one you opened.
+ *
+ * `null` at each end rather than wrapping: a pager that loops gives no signal
+ * that you have reached the bottom of the feed.
  */
-export function relatedItems(item: FeedItem) {
-	const others = feedItems.filter((other) => other.id !== item.id);
-	const sameSource = others.filter((other) => other.source === item.source);
-	if (sameSource.length > 0) {
-		return { label: `More from ${item.source}`, items: sameSource.slice(0, 3) };
-	}
+export function adjacentItems(item: FeedItem) {
+	const at = feedItems.findIndex((other) => other.id === item.id);
 	return {
-		label: `Related in ${item.category}`,
-		items: others
-			.filter((other) => other.category === item.category)
-			.slice(0, 3),
+		prev: at > 0 ? feedItems[at - 1] : null,
+		next: at < feedItems.length - 1 ? feedItems[at + 1] : null,
 	};
 }
 
