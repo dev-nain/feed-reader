@@ -18,6 +18,15 @@ export default [
 		route("discover/source/:kind", "routes/discover.source.tsx"),
 		route("discover/:slug", "routes/discover.category.tsx"),
 	]),
+	// Auth pages sit outside the shell: full-page, no sidebar, no top bar.
+	route("sign-in", "routes/auth.sign-in.tsx"),
+	route("sign-up", "routes/auth.sign-up.tsx"),
+	route("forgot-password", "routes/auth.forgot-password.tsx"),
+	route("reset-password", "routes/auth.reset-password.tsx"),
+	route("auth/callback", "routes/auth.callback.ts"),
+	route("auth/oauth", "routes/auth.oauth.ts"),
+	route("sign-out", "routes/auth.sign-out.ts"),
+
 	route("style-guide", "routes/style-guide.tsx"),
 	route("set-theme", "routes/set-theme.ts"),
 	route("set-layout", "routes/set-layout.ts"),

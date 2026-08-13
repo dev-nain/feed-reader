@@ -82,3 +82,120 @@
 		}
 	}
 }
+
+/*
+ * Cross-fade between pages that opt in with `<Link viewTransition>`. Only the
+ * auth flows use it today — moving between sign-in, sign-up and the password
+ * pages, where the two screens are near-identical and a hard swap reads as a
+ * flicker.
+ *
+ * Anyone who has asked their system to reduce motion gets the instant swap
+ * back; framer-motion honours the same preference through `reducedMotion="user"`.
+ */
+@media (prefers-reduced-motion: no-preference) {
+	::view-transition-old(root) {
+		animation: fp-fade-out 120ms ease-out both;
+	}
+
+	::view-transition-new(root) {
+		animation: fp-fade-in 180ms ease-out both;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	::view-transition-old(root),
+	::view-transition-new(root) {
+		animation: none;
+	}
+}
+
+@keyframes fp-fade-out {
+	to {
+		opacity: 0;
+	}
+}
+
+@keyframes fp-fade-in {
+	from {
+		opacity: 0;
+	}
+}
+
+/*
+ * Entrance for server-rendered content.
+ *
+ * Deliberately CSS rather than framer-motion: a JS entrance has to start from
+ * `opacity: 0`, which is what the SSR'd markup then contains, so the page is
+ * blank until hydration finishes. On an auth screen that is the whole page.
+ * A keyframe runs as soon as styles apply and needs no JavaScript at all.
+ */
+@layer components {
+	.fp-enter {
+		animation: fp-rise 350ms ease-out both;
+	}
+
+	.fp-enter-2 {
+		animation: fp-rise 350ms ease-out 80ms both;
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.fp-enter,
+		.fp-enter-2 {
+			animation: none;
+		}
+	}
+}
+
+@keyframes fp-rise {
+	from {
+		opacity: 0;
+		transform: translateY(8px);
+	}
+}
+
+/*
+ * Ambient backdrop for the auth pages.
+ *
+ * Layered radial gradients plus a masked dot grid, rather than the two
+ * `blur-3xl` circles this replaces: a 32rem element under a 48px blur is a
+ * large offscreen buffer for the compositor to paint every frame, and the
+ * gradients render for free. It also stops the wash clipping into hard-edged
+ * circles at small viewports.
+ *
+ * Colours come from tokens so the OS-dark-without-a-cookie case is covered —
+ * see the note in tokens.css.
+ */
+@layer components {
+	.fp-ambient {
+		background-image:
+			radial-gradient(
+				60rem 42rem at 8% -10%,
+				var(--ambient-glow-a),
+				transparent 60%
+			),
+			radial-gradient(
+				55rem 40rem at 95% 110%,
+				var(--ambient-glow-b),
+				transparent 60%
+			);
+	}
+
+	/* Texture. Masked to a soft ellipse so it never reaches the page edges. */
+	.fp-ambient::after {
+		content: "";
+		position: absolute;
+		inset: 0;
+		background-image: radial-gradient(
+			circle at center,
+			var(--ambient-dot) 1px,
+			transparent 1px
+		);
+		background-size: 26px 26px;
+		-webkit-mask-image: radial-gradient(
+			70% 60% at 50% 45%,
+			#000 0%,
+			transparent 100%
+		);
+		mask-image: radial-gradient(70% 60% at 50% 45%, #000 0%, transparent 100%);
+	}
+}

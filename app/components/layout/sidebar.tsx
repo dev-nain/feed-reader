@@ -12,6 +12,11 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { Link, NavLink } from "react-router";
+import {
+	AccountMenu,
+	GuestPanel,
+	type ViewerSummary,
+} from "~/components/layout/account-menu";
 import { SourceMark } from "~/components/shared";
 import { ThemeToggle } from "~/components/theme-toggle";
 import {
@@ -97,7 +102,7 @@ function CategoryGroup({ category }: { category: Category }) {
  * Full-height chrome at `lg` and up: brand, primary navigation and the category
  * tree in one column, so the app needs no separate top bar.
  */
-export function Sidebar() {
+export function Sidebar({ viewer }: { viewer: ViewerSummary }) {
 	return (
 		<div className="hidden w-sidebar shrink-0 flex-col border-r border-border bg-bg-secondary lg:flex">
 			<Link
@@ -181,18 +186,27 @@ export function Sidebar() {
 				</div>
 			</nav>
 
-			<div className="flex shrink-0 items-center gap-2 border-t border-border py-2 pl-4 pr-2">
-				<CircleCheck className="size-4 shrink-0 text-success" aria-hidden />
-				<span className="flex-1 truncate text-sm text-success">
-					All feeds healthy
-				</span>
-				<ThemeToggle className="size-8 [&_svg]:size-4" />
-				<span
-					aria-hidden
-					className="grid size-7 shrink-0 place-items-center rounded-full bg-accent text-xs font-semibold text-white"
-				>
-					MS
-				</span>
+			<div className="shrink-0 border-t border-border">
+				{viewer.kind === "guest" && (
+					<div className="px-3 pt-3">
+						<GuestPanel />
+					</div>
+				)}
+
+				<div className="flex items-center gap-2 py-2 pl-4 pr-2">
+					<CircleCheck className="size-4 shrink-0 text-success" aria-hidden />
+					<span className="flex-1 truncate text-sm text-success">
+						All feeds healthy
+					</span>
+					<ThemeToggle className="size-8 [&_svg]:size-4" />
+					{/*
+					 * Guests get their call to action from the panel above, so the
+					 * status row keeps only the avatar it had before.
+					 */}
+					{viewer.kind === "user" && (
+						<AccountMenu viewer={viewer} className="size-7" />
+					)}
+				</div>
 			</div>
 		</div>
 	);

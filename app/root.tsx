@@ -9,11 +9,47 @@ import {
 } from "react-router";
 import type { Route } from "./+types/root";
 import { TooltipProvider } from "./components/ui/tooltip";
+import { viewerContext } from "./context";
 import { getTheme } from "./lib/theme.server";
+import { getViewer, resolveViewer } from "./lib/viewer/viewer.server";
 import "./app.css";
 
-export async function loader({ request }: Route.LoaderArgs) {
-	return { theme: await getTheme(request) };
+/*
+ * Identity is resolved once here, and the response is where Supabase's cookies
+ * finally land.
+ *
+ * The flush is the load-bearing half. The SDK refreshes an expiring access
+ * token during whichever call first touches auth — typically deep inside some
+ * loader with no response in hand — and reports the new cookies through
+ * `setAll`. Nothing else copies them onto the response, so without this the
+ * browser keeps the stale token and the user is silently signed out about an
+ * hour after signing in.
+ *
+ * Doing it after `await next()` also covers responses produced by a thrown
+ * `redirect`, which is exactly the sign-in path.
+ */
+export const middleware: Route.MiddlewareFunction[] = [
+	async ({ request, context }, next) => {
+		const viewer = await resolveViewer(request, context);
+		context.set(viewerContext, viewer);
+
+		const response = await next();
+		viewer.commit(response);
+		return response;
+	},
+];
+
+export async function loader({ request, context }: Route.LoaderArgs) {
+	const viewer = getViewer(context);
+
+	return {
+		theme: await getTheme(request),
+		// Only what the chrome renders. Never the client, never the claims.
+		viewer:
+			viewer.kind === "user"
+				? { kind: "user" as const, email: viewer.email }
+				: { kind: "guest" as const },
+	};
 }
 
 export const links: Route.LinksFunction = () => [
