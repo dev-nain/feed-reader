@@ -45,6 +45,22 @@ export const DropdownMenuLabel = forwardRef<
 ));
 DropdownMenuLabel.displayName = "DropdownMenuLabel";
 
+/**
+ * A plain action row. Unlike the checkbox and radio items it has no indicator,
+ * so it drops the left padding they reserve for one.
+ */
+export const DropdownMenuItem = forwardRef<
+	React.ComponentRef<typeof DropdownMenuPrimitive.Item>,
+	React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.Item>
+>(({ className, ...props }, ref) => (
+	<DropdownMenuPrimitive.Item
+		ref={ref}
+		className={cn(ITEM, "pl-2", className)}
+		{...props}
+	/>
+));
+DropdownMenuItem.displayName = "DropdownMenuItem";
+
 export const DropdownMenuSeparator = forwardRef<
 	React.ComponentRef<typeof DropdownMenuPrimitive.Separator>,
 	React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.Separator>

@@ -1,5 +1,9 @@
 import { Plus, Rss, Search } from "lucide-react";
 import { Link } from "react-router";
+import {
+	AccountMenu,
+	type ViewerSummary,
+} from "~/components/layout/account-menu";
 import { WithTooltip } from "~/components/shared";
 import { ThemeToggle } from "~/components/theme-toggle";
 import { buttonVariants } from "~/components/ui/button";
@@ -10,7 +14,7 @@ import { Input } from "~/components/ui/input";
  * brand, search and navigation, so this bar would only duplicate it — below
  * `lg` the sidebar is hidden and this is the only chrome there is.
  */
-export function TopHeader() {
+export function TopHeader({ viewer }: { viewer: ViewerSummary }) {
 	return (
 		<header className="sticky top-0 z-20 flex h-14 shrink-0 items-center gap-3 border-b border-border bg-bg-primary px-4 lg:hidden">
 			<Link
@@ -52,12 +56,7 @@ export function TopHeader() {
 						<Plus />
 					</Link>
 				</WithTooltip>
-				<span
-					aria-hidden
-					className="grid size-8 place-items-center rounded-full bg-accent text-xs font-semibold text-white"
-				>
-					MS
-				</span>
+				<AccountMenu viewer={viewer} />
 			</div>
 		</header>
 	);
